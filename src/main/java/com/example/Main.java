@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +51,7 @@ public class Main {
 		SpringApplication.run(Main.class, args);
 	}
 
-	@RequestMapping("/")
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	String index(HttpServletRequest request, HttpServletResponse response) {
 		
 		
