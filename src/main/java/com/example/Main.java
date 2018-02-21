@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,11 +52,10 @@ public class Main {
 		SpringApplication.run(Main.class, args);
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	String index(HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("request: " + request.toString());
+	@RequestMapping(value = "/a", method = RequestMethod.GET)
+	String index(HttpServletRequest request) {
+		System.out.println("Session Id: " + request.getHeader("Cookie"));
 
-		System.out.println("content length: " + request.getContentLength());
 		return "index";
 	}
 
