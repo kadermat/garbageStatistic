@@ -53,8 +53,8 @@ public class Main {
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	String index(HttpServletRequest request, HttpServletResponse response) {
-		
-		
+		System.out.println("request: " + request.toString());
+
 		System.out.println("content length: " + request.getContentLength());
 		return "index";
 	}
