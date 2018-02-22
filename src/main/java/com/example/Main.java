@@ -23,25 +23,43 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+
+import java.awt.Image;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Controller
 @SpringBootApplication
 public class Main {
 
+	private static final String BASE_URL_GOOGLE_MAPS = "https://maps.googleapis.com/maps/api/staticmap?";
+	
 	@Value("${spring.datasource.url}")
 	private String dbUrl;
 
@@ -53,11 +71,26 @@ public class Main {
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String index(HttpServletRequest request) {
+	public String index(HttpServletRequest request) throws IOException {
 		System.out.println("Accept: " + request.getHeader("Accept"));
 		System.out.println("testAttr: " + request.getHeader("Test"));
-		System.out.println(getApikey());
+		// System.out.println(getApikey());
+
+		FileOutputStream fos;
+
+		// fos = new FileOutputStream("E:\\googleDrive\\test.png");
+		// fos.write(getGoogleMapsImage());
+
+		// fos.close();
+
 		return "index";
+
+	}
+
+	@RequestMapping(value = "/test", method = RequestMethod.GET, produces = "image/png")
+	public @ResponseBody byte[] picture(HttpServletRequest request) throws IOException {
+
+		return getGoogleMapsImage();
 
 	}
 
@@ -84,6 +117,32 @@ public class Main {
 
 	}
 
+	private byte[] getGoogleMapsImage() throws IOException {
+		URL url = new URL(
+				"https://maps.googleapis.com/maps/api/staticmap?center=\"47.405045,8.403371\"&size=1920x1080&scale=1&maptype=roadmap4&key=AIzaSyCsM3ePZ60a1PGKOgcxhQmi94QX2yGNZgE");
+		InputStream in = new BufferedInputStream(url.openStream());
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buf = new byte[4096];
+		int n = 0;
+		while (-1 != (n = in.read(buf))) {
+			out.write(buf, 0, n);
+		}
+		out.close();
+		in.close();
+		byte[] response = out.toByteArray();
+		return response;
+	}
+	
+	private String requestUrlBuilder(String center, String size, String scale, List<String> markers) {
+		String url = BASE_URL_GOOGLE_MAPS;
+		String key = getApikey();
+		
+		
+		
+		return null;
+	}
+	
+
 	@RequestMapping("/db")
 	public String db(Map<String, Object> model) {
 		try (Connection connection = dataSource.getConnection()) {
@@ -103,6 +162,15 @@ public class Main {
 			model.put("message", e.getMessage());
 			return "error";
 		}
+	}
+
+	@Scheduled(fixedDelay = 500000)
+	private void generateNewImage() throws IOException {
+
+		FileOutputStream out = new FileOutputStream(new File("test.png"));
+		out.write(getGoogleMapsImage());
+		out.close();
+		System.out.println("Got new Image");
 	}
 
 	@Bean
