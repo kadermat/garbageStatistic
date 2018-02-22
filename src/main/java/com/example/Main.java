@@ -52,15 +52,40 @@ public class Main {
 		SpringApplication.run(Main.class, args);
 	}
 
-	@RequestMapping(value = "/a", method = RequestMethod.GET)
-	String index(HttpServletRequest request) {
-		System.out.println("Session Id: " + request.getHeader("Cookie"));
-
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index(HttpServletRequest request) {
+		System.out.println("Accept: " + request.getHeader("Accept"));
+		System.out.println("testAttr: " + request.getHeader("Test"));
+		System.out.println(getApikey());
 		return "index";
+
+	}
+
+	/**
+	 * Gets the api key for google maps out of the database,
+	 * 
+	 * @return api key if successfull, null otherise
+	 */
+	private String getApikey() {
+		try (Connection connection = dataSource.getConnection()) {
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * from api");
+
+			String key = null;
+			while (rs.next()) {
+				key = rs.getString(2);
+			}
+
+			return key;
+		} catch (Exception e) {
+			System.out.println("exception getting api key");
+			return null;
+		}
+
 	}
 
 	@RequestMapping("/db")
-	String db(Map<String, Object> model) {
+	public String db(Map<String, Object> model) {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement stmt = connection.createStatement();
 			stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
